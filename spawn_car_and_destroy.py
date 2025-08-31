@@ -1,7 +1,7 @@
 import carla
 import random
 import time
-
+#print("hello pop")
 #Connect to server
 client = carla.Client("localhost", 2000)
 client.set_timeout(5.0)
