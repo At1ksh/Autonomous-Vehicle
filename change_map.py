@@ -1,6 +1,9 @@
 import carla
 
-client=carla.get_client("localhost",2000)
-client.setTimeout(5)
-world=client.get_world()
+client=carla.Client("localhost",2000)
+client.set_timeout(5)
+
+world=client.load_world("Town06")
+
+print("Now Running map:",world.get_map().name)
 
