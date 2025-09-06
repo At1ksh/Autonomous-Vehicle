@@ -18,5 +18,6 @@ def show_attrs(blueprint_id):
     for attr in bp:
         print(f"  - {attr.id} | type ={attr.type} | recommended={attr.recommended_values}")
         
-show_attrs("vehicle.kawasaki.ninja")
-show_attrs("sensor.lidar.ray_cast")
+#show_attrs("vehicle.kawasaki.ninja")
+show_attrs("sensor.lidar.ray_cast_semantic")
+#show_attrs("sensor.camera.rgb")
