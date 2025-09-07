@@ -85,7 +85,7 @@ finally:
     except Exception as e:
         print(f"Could not destroy vehicle: {e}")
         
-    # 3) Unsync tm 
+    # 3) Unsync tm adsasd
     try:
         tm.set_synchronous_mode(False)
     except Exception as e:
