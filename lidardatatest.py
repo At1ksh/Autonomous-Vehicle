@@ -70,7 +70,6 @@ finally:
     # 1) Stop incoming callbacks
     try:
         lidar.stop()
-        lidar.listen(None)
         world.tick()
     except Exception as e:
         print(f"Could not stop lidar: {e}")
