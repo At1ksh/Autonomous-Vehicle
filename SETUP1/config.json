@@ -1,0 +1,106 @@
+{
+    "host": "127.0.0.1",
+    "port": 2000,
+    "tm_port": 5000,
+    "timeout":10.0, 
+
+    "synchronous_mode": true,
+    "fixed_delta_seconds": 0.05,
+    "seed": 42,
+    "map": "",
+
+    "traffic":{
+        "vehicles":120,
+        "walkers":60,
+        "vehicle_lights_on":true,
+        "hybrid_physics_mode":true,
+        "global_speed_perc_diff":-10,
+        "ignore_signs_percentage": 0,
+        "ignore_lights_percentage": 0,
+        "auto_lane_change": true,
+        "min_distance": 1.0
+    },
+
+    "ego":{
+        "blueprint":"vehicle.tesla.model3",
+        "spawn_point": "random",
+        "autopilot": true,
+        "role_name": "hero"
+    },
+
+    "sensors":[
+        {
+            "type":"sensor.camera.rgb",
+            "id": "hero_cam_front",
+            "transform":{"x":1.5,"y":0.0,"z":1.6,"pitch":0.0,"roll":0.0,"yaw":0.0},
+            "attributes":{
+                "image_size_x":"960",
+                "image_size_y":"540",
+                "fov":"90",
+                "sensor_tick":"0.05"
+            }
+        },
+        {
+            "type":"sensor.camera.semantic_segmentation",
+            "id": "hero_seg_front",
+            "transform":{"x":1.5,"y":0.0,"z":1.6,"pitch":0.0,"roll":0.0,"yaw":0.0},
+            "attributes":{
+                "image_size_x":"960",
+                "image_size_y":"540",
+                "fov":"90",
+                "sensor_tick":"0.1"
+            }
+        },
+        {
+            "type":"sensor.camera.depth",
+            "id": "hero_depth_front",
+            "transform":{"x":1.5,"y":0.0,"z":1.6,"pitch":0.0,"roll":0.0,"yaw":0.0},
+            "attributes":{
+                "image_size_x":"960",
+                "image_size_y":"540",
+                "fov":"90",
+                "sensor_tick":"0.1"
+            }
+        },
+        {
+            "type":"sensor.lidar.ray_cast",
+            "id": "hero_lidar_top",
+            "transform":{"x":0.0,"y":0.0,"z":2.5,"pitch":0.0,"roll":0.0,"yaw":0.0},
+            "attributes":{
+                "channels": "64",
+                "range":"30",
+                "rotation_frequency":"10",
+                "points_per_second":"50000",
+                "upper_fov":"15",
+                "lower_fov":"-25",
+                "sensor_tick":"0.1"
+            }
+        },
+        {
+            "type":"sensor.other.radar",
+            "id": "hero_radar_front",
+            "transform":{"x":2.0,"y":0.0,"z":1.0,"pitch":0.0,"roll":0.0,"yaw":0.0},
+            "attributes":{
+                "horizontal_fov":"35",
+                "vertical_fov":"20",
+                "range":"20",
+                "sensor_tick":"0.1"
+            }
+        },
+        {
+            "type":"sensor.other.gnss",
+            "id": "hero_gnss",
+            "transform":{ "x": 0.0, "y": 0.0, "z": 2.0},
+            "attributes":{"sensor_tick":"0.2"}
+        },
+        {
+            "type": "sensor.other.imu",
+            "id": "hero_imu",
+            "transform": { "x": 0.0, "y": 0.0, "z": 1.0},
+            "attributes": {"sensor_tick":"0.05"}
+        }
+    ],
+
+    "weather":{"preset":"ClearNoon"}
+            
+}
