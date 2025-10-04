@@ -16,6 +16,18 @@ def main(args):
     weather = cfg.get("weather", {}).get("preset","ClearNoon")
     apply_weather(world,weather)
     
+    peds = cfg.get("pedestrians",{})
+    try:
+        world.set_pedestrians_cross_factor(float(peds.get("cross_factor",0.0)))
+        world.set_pedestrians_seed(int(cfg.get("seed",42)))
+    except Exception:
+        pass
+    
+    if world.get_settings().synchronous_mode:
+        world.tick()
+    else:
+        world.wait_for_tick()
+    
     print("[bootsrap] Done. World is {} | sync ={}| weather={}".format(world.get_map().name, world.get_settings().synchronous_mode, weather))
     
 if __name__ == "__main__":

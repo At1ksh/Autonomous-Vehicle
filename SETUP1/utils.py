@@ -78,6 +78,7 @@ def set_tm_global(world: carla.World, tm: carla.TrafficManager, cfg):
     tm.set_global_distance_to_leading_vehicle(float(tr.get("min_distance", 2.0)))
     tm.global_percentage_speed_difference(float(tr.get("global_speed_perc_diff", -10)))
     tm.set_respawn_dormant_vehicles(True)
+    tm.set_random_device_seed(int(cfg.get("seed", 42)))
 
     # NOTE: Lane-change, ignore_lights/signs, per-vehicle speed diffs, etc.
     # are PER-ACTOR settings in 0.9.14. We'll apply those after vehicles are spawned.

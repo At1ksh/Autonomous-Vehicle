@@ -1,0 +1,33 @@
+        {
+            "type":"sensor.camera.rgb",
+            "id": "hero_cam_front",
+            "transform":{"x":1.5,"y":0.0,"z":1.6,"pitch":0.0,"roll":0.0,"yaw":0.0},
+            "attributes":{
+                "image_size_x":"960",
+                "image_size_y":"540",
+                "fov":"90",
+                "sensor_tick":"0.05"
+            }
+        },
+        {
+            "type":"sensor.camera.semantic_segmentation",
+            "id": "hero_seg_front",
+            "transform":{"x":1.5,"y":0.0,"z":1.6,"pitch":0.0,"roll":0.0,"yaw":0.0},
+            "attributes":{
+                "image_size_x":"960",
+                "image_size_y":"540",
+                "fov":"90",
+                "sensor_tick":"0.1"
+            }
+        },
+        {
+            "type":"sensor.camera.depth",
+            "id": "hero_depth_front",
+            "transform":{"x":1.5,"y":0.0,"z":1.6,"pitch":0.0,"roll":0.0,"yaw":0.0},
+            "attributes":{
+                "image_size_x":"960",
+                "image_size_y":"540",
+                "fov":"90",
+                "sensor_tick":"0.1"
+            }
+        },
