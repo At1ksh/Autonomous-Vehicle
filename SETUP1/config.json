@@ -64,14 +64,38 @@
         },
         {
             "type":"sensor.other.radar",
-            "id": "hero_radar_front",
+            "id": "radar_front_lrr",
             "transform":{"x":2.0,"y":0.0,"z":1.0,"pitch":0.0,"roll":0.0,"yaw":0.0},
             "attributes":{
                 "horizontal_fov":"35",
                 "vertical_fov":"20",
-                "range":"20",
+                "range":"150",
                 "sensor_tick":"0.1"
             }
+        },
+        {
+            "type": "sensor.other.radar",
+            "id": "radar_fl_srr",
+            "transform": {"x": 1.9, "y": 0.9, "z": 0.6, "pitch": 0.0, "roll": 0.0, "yaw": 45.0},
+            "attributes": { "horizontal_fov": "110", "vertical_fov": "18", "range": "45", "sensor_tick": "0.10" }
+        },
+        {
+            "type": "sensor.other.radar",
+            "id": "radar_fr_srr",
+            "transform": {"x": 1.9, "y": -0.9, "z": 0.6, "pitch": 0.0, "roll": 0.0, "yaw": 315.0},
+            "attributes": { "horizontal_fov": "110", "vertical_fov": "18", "range": "45", "sensor_tick": "0.10" }
+        },
+        {
+            "type": "sensor.other.radar",
+            "id": "radar_rl_srr",
+            "transform": {"x": -1.9, "y": 0.9, "z": 0.6, "pitch": 0.0, "roll": 0.0, "yaw": 225.0},
+            "attributes": { "horizontal_fov": "110", "vertical_fov": "18", "range": "45", "sensor_tick": "0.10" }
+        },
+        {
+            "type": "sensor.other.radar",
+            "id": "radar_rr_srr",
+            "transform": {"x": -1.9, "y": -0.9, "z": 0.6, "pitch": 0.0, "roll": 0.0, "yaw": 135.0},
+            "attributes": { "horizontal_fov": "110", "vertical_fov": "18", "range": "45", "sensor_tick": "0.10" }
         },
         {
             "type":"sensor.other.gnss",

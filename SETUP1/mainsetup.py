@@ -301,7 +301,8 @@ def attach_sensors_async(world:carla.World, ego: carla.Actor, sensors_cfg: list,
     img_writer = AsyncDiskWriter("camera", max_queue=2048)
     lidar_writer = AsyncDiskWriter("lidar", max_queue=512)
     event_writer = AsyncDiskWriter("events", max_queue=64)
-    writers.extend([img_writer, lidar_writer, event_writer])
+    radar_writer = AsyncDiskWriter("radar",max_queue=1024)
+    writers.extend([img_writer, lidar_writer, event_writer,radar_writer])
     
     cam_dirs = {}
     lidar_dirs = {}
@@ -363,6 +364,26 @@ def attach_sensors_async(world:carla.World, ego: carla.Actor, sensors_cfg: list,
                 traceback.print_exc()
         return cb
 
+    def make_radar_cb(subdir: str, sid:str):
+        path_dir = os.path.join(out_root, subdir)
+        ensure_dir(path_dir)
+        
+        def cb(meas: carla.RadarMeasurement):
+            try:
+                frame = meas.frame
+                if np is not None:
+                    data = np.array([[d.depth, d.azimuth, d.altitude, d.velocity]for d in meas],dtype=np.float32)
+                    out_path = os.path.join(path_dir, f"{sid}_{frame:06d}.npy")
+                    radar_writer.submit(lambda data= data, out_path = out_path: np.save(out_path,data))
+                else:
+                    out_path = os.path.join(path_dir, f"{sid}_{frame:06d}.txt")
+                    lines = "".join(f"{d.depth:.3f},{d.azimuth:.3f},{d.altitude:.3f},{d.velocity:.3f}\n" for d in meas)
+                    radar_writer.submit(lambda lines = lines, out_path=out_path: open(out_path,"w").write(lines))
+            except Exception as e:
+                print(f"[sensor:{sid}] radar cb error: {e}")
+                traceback.print_exc()
+        return cb
+
     def make_event_writer(name: str, header: str):
         csv_path = os.path.join(events_dirs, f"{name}.csv")
         # create once with header
@@ -419,6 +440,12 @@ def attach_sensors_async(world:carla.World, ego: carla.Actor, sensors_cfg: list,
         elif "sensor.lidar" in stype:
             sub = f"{sid}_lidar"
             cb = make_lidar_cb(sub, sid)
+            sensor.listen(cb)
+            print(f"[sensor] attached {sid} ({stype}) -> {sub}/")
+        
+        elif "sensor.other.radar" in stype:
+            sub = f"{sid}_radar"
+            cb = make_radar_cb(sub,sid)
             sensor.listen(cb)
             print(f"[sensor] attached {sid} ({stype}) -> {sub}/")
 
@@ -674,7 +701,8 @@ def main():
             except Exception:
                 pass
         print(f"[writers] camera dropped = {writers[0].dropped if writers else 0 } " 
-              f"lidar dropped = {writers[1].dropped if len(writers)>1 else 0}")
+              f"lidar dropped = {writers[1].dropped if len(writers)>1 else 0}"
+              f"radar dropped = {writers[3].dropped if len(writers)>3 else 0}")
 
         # stop walkers first
         for cid in ctrl_ids:
