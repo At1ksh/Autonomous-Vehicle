@@ -27,7 +27,7 @@
         "points_per_second": "300000",
         "upper_fov": "15",
         "lower_fov": "-25",
-        "sensor_tick": "0.10"
+        "sensor_tick": "0.05"
       }
     },
 

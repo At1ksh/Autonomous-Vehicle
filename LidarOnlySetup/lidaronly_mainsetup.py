@@ -80,19 +80,34 @@ def invert_tf(M):
     Minv[:3,3] = -R.T @ t
     return Minv
 
-def save_lidar_ply_binary(path: str, pts_xyz:"np.ndarray"):
-    """Write Nx3 float32 points to a binary little-endian PLY"""
-    assert np is not None
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path,"wb") as f:
-        header = (
-            "ply\nformat binary_little_endian 1.0\n"
-            f"element vertex {pts_xyz.shape[0]}\n"
-            "property float x\nproperty float y\nproperty float z\n"
-            "end_header\n"
-        ).encode("ascii")
-        f.write(header)
-        f.write(pts_xyz.astype(np.float32).tobytes(order="C"))
+def save_lidar_ply_binary(filename: str, pts: "np.ndarray"):
+    """
+    Save points as binary little-endian PLY.
+    pts shape: (N,3) for XYZ or (N,4) for XYZI (float32)
+    """
+    assert np is not None, "NumPy required"
+    pts = np.asarray(pts, dtype=np.float32)
+    assert pts.ndim == 2 and pts.shape[1] in (3, 4), "pts must be (N,3) or (N,4)"
+    N, C = pts.shape
+
+    with open(filename, "wb") as f:
+        # header
+        header = [
+            "ply",
+            "format binary_little_endian 1.0",
+            f"element vertex {N}",
+            "property float x",
+            "property float y",
+            "property float z",
+        ]
+        if C == 4:
+            header.append("property float intensity")
+        header.append("end_header\n")
+        f.write(("\n".join(header)).encode("ascii"))
+
+        # body
+        pts.tofile(f)
+
         
 def load_config(path: Optional[str])-> dict:
     if path and os.path.exists(path):
@@ -164,6 +179,10 @@ def configure_world_and_tm(client: carla.Client, cfg: dict)-> Tuple[carla.World,
         world.tick()
     else:
         world.wait_for_tick()
+        
+    s = world.get_settings()
+    print("[world] sync =",s.synchronous_mode," | fixed_dt=",s.fixed_delta_seconds)
+    
     return world, tm, tr
 
 
@@ -365,6 +384,47 @@ def attach_sensors_async(world:carla.World, ego: carla.Actor, sensors_cfg: list,
     #             traceback.print_exc()
     #     return cb
 
+    
+    def make_lidar_cb_ego(subdir: str, sid: str, sensor: carla.Actor, ego: carla.Actor):
+        path_dir = os.path.join(out_root, subdir)
+        ensure_dir(path_dir)
+
+        def cb(meas: carla.LidarMeasurement):
+            try:
+                frame = meas.frame
+                if np is not None:
+                    # === read XYZI ===
+                    pts4 = np.frombuffer(meas.raw_data, dtype=np.float32).reshape(-1, 4).copy()  # [x,y,z,intensity]
+                    xyz = pts4[:, :3]
+                    inten = pts4[:, 3:4]  # keep as column
+
+                    # sensor->world & ego->world
+                    S_w = carla_transform_to_mat(sensor.get_transform())
+                    E_w = carla_transform_to_mat(ego.get_transform())
+                    E_w_inv = invert_tf(E_w)
+
+                    # transform XYZ to ego: ego^-1 * (sensor_w * p)
+                    ones = np.ones((xyz.shape[0], 1), dtype=np.float32)
+                    xyz_h = np.concatenate([xyz, ones], axis=1)
+                    xyz_ego_h = (E_w_inv @ (S_w @ xyz_h.T)).T
+                    xyz_ego = xyz_ego_h[:, :3]
+
+                    # === reattach intensity ===
+                    pts_ego4 = np.concatenate([xyz_ego, inten], axis=1).astype(np.float32)
+
+                    out_path = os.path.join(path_dir, f"{sid}_{frame:06d}.ply")
+                    npy_out = os.path.join(path_dir, f"{sid}_{frame:06d}.npy")
+                    lidar_writer.submit(lambda p=pts_ego4, fn=npy_out: np.save(fn, p))
+                else:
+                    # fallback raw dump
+                    raw = bytes(meas.raw_data)
+                    out_path = os.path.join(path_dir, f"{sid}_{frame:06d}.bin")
+                    lidar_writer.submit(lambda r=raw, fn=out_path: open(fn, "wb").write(r))
+            except Exception as e:
+                print(f"[sensor:{sid}] lidar cb error: {e}")
+                traceback.print_exc()
+        return cb
+
     def make_lidar_cb(subdir: str, sid: str):
         path_dir = os.path.join(out_root, subdir)
         ensure_dir(path_dir)
@@ -461,9 +521,9 @@ def attach_sensors_async(world:carla.World, ego: carla.Actor, sensors_cfg: list,
         #     print(f"[sensor] attached {sid} ({stype}) -> {sub}/")
         if "sensor.lidar" in stype:
             sub = f"{sid}_lidar"
-            cb = make_lidar_cb(sub, sid)
+            cb = make_lidar_cb_ego(sub, sid,sensor,ego)
             sensor.listen(cb)
-            print(f"[sensor] attached {sid} ({stype}) -> {sub}/")
+            print(f"[sensor] attached {sid} ({stype}) -> {sub}/ (ego-frame)")
         
         # elif "sensor.other.radar" in stype:
         #     sub = f"{sid}_radar"
