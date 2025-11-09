@@ -1,2 +1,5 @@
 SETUP1/dataset
 LidarOnlySetup/dataset
+CameraOnlySetup/ppo_camera_log
+LidarOnlySetup/LidarCNN/__pycache__
+CameraOnlySetup/Camera_env/__pycache__
